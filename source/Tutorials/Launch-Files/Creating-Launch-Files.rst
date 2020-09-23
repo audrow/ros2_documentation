@@ -40,37 +40,8 @@ Tasks
 1 Setup
 ^^^^^^^
 
-Create a new directory to store your launch file:
-
-.. code-block:: console
-
-  mkdir launch
-
-Create a launch file named ``turtlesim_mimic_launch.py`` by entering the following command in the terminal:
-
-.. tabs::
-
-   .. group-tab:: Linux
-
-      .. code-block:: console
-
-        touch launch/turtlesim_mimic_launch.py
-
-   .. group-tab:: macOS
-
-      .. code-block:: console
-
-        touch launch/turtlesim_mimic_launch.py
-
-   .. group-tab:: Windows
-
-      .. code-block:: console
-
-        type nul > launch/turtlesim_mimic_launch.py
-
-You can also go into your system’s file directory using the GUI and create a new file that way.
-
-Open the new file in your preferred text editor.
+Create a launch file named ``turtlesim_mimic_launch.xml`` or ``turtlesim_mimic_launch.py``, depending if you're using XML or Python launch files.
+Open it in your preferred text editor.
 
 2 Write the launch file
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -79,41 +50,98 @@ Let’s put together a ROS 2 launch file using the ``turtlesim`` package and its
 
 Copy and paste the complete code into the ``turtlesim_mimic_launch.py`` file:
 
+.. tabs::
 
-.. code-block:: python
+  .. group-tab:: XML launch file
 
-    from launch import LaunchDescription
-    from launch_ros.actions import Node
+    .. code-block:: xml
 
-    def generate_launch_description():
-        return LaunchDescription([
-            Node(
-                package='turtlesim',
-                namespace='turtlesim1',
-                executable='turtlesim_node',
-                name='sim'
-            ),
-            Node(
-                package='turtlesim',
-                namespace='turtlesim2',
-                executable='turtlesim_node',
-                name='sim'
-            ),
-            Node(
-                package='turtlesim',
-                executable='mimic',
-                name='mimic',
-                remappings=[
-                    ('/input/pose', '/turtlesim1/turtle1/pose'),
-                    ('/output/cmd_vel', '/turtlesim2/turtle1/cmd_vel'),
-                ]
-            )
-        ])
+        <launch>
+          <node pkg="turtlesim" exec="turtlesim_node" name="sim" namespace="turtlesim1"/>
+          <node pkg="turtlesim" exec="turtlesim_node" name="sim" namespace="turtlesim2"/>
+          <node pkg="turtlesim" exec="mimic" name="mimic">
+            <remap from="/input/pose" to="/turtlesim1/turtle1/pose"/>
+            <remap from="/output/cmd_vel" to="/turtlesim2/turtle1/cmd_vel"/>
+          </node>
+        </launch>
 
+  .. group-tab:: Python launch file, Foxy and newer
+
+    .. code-block:: python
+
+        from launch import LaunchDescription
+        from launch_ros.actions import Node
+
+        def generate_launch_description():
+            return LaunchDescription([
+                Node(
+                    package='turtlesim',
+                    namespace='turtlesim1',
+                    executable='turtlesim_node',
+                    name='sim'
+                ),
+                Node(
+                    package='turtlesim',
+                    namespace='turtlesim2',
+                    executable='turtlesim_node',
+                    name='sim'
+                ),
+                Node(
+                    package='turtlesim',
+                    executable='mimic',
+                    name='mimic',
+                    remappings=[
+                        ('/input/pose', '/turtlesim1/turtle1/pose'),
+                        ('/output/cmd_vel', '/turtlesim2/turtle1/cmd_vel'),
+                    ]
+                )
+            ])
+
+  .. group-tab:: Python launch file, Eloquent and older
+
+    .. code-block:: python
+
+         from launch import LaunchDescription
+         from launch_ros.actions import Node
+
+         def generate_launch_description():
+             return LaunchDescription([
+                 Node(
+                     package='turtlesim',
+                     node_namespace='turtlesim1',
+                     node_executable='turtlesim_node',
+                     node_name='sim'
+                 ),
+                 Node(
+                     package='turtlesim',
+                     node_namespace='turtlesim2',
+                     node_executable='turtlesim_node',
+                     node_name='sim'
+                 ),
+                 Node(
+                     package='turtlesim',
+                     node_executable='mimic',
+                     node_name='mimic',
+                     remappings=[
+                         ('/input/pose', '/turtlesim1/turtle1/pose'),
+                         ('/output/cmd_vel', '/turtlesim2/turtle1/cmd_vel'),
+                     ]
+                 )
+             ])
 
 
 2.1 Examine the launch file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+XML launch files specifics
+##########################
+
+XML launch files must have a `<launch>` parent tag.
+That's start of the launch description, and each of it's children tags is an action.
+In this example, the `<node>` action was used.
+
+Python Launch files specifics
+#############################
 
 These import statements pull in some Python ``launch`` modules.
 
@@ -131,25 +159,56 @@ Next, the launch description itself begins:
 
       ])
 
-Within the ``LaunchDescription`` is a system of three nodes, all from the ``turtlesim`` package.
+Common (please put a nice subtitle here)
+########################################
+
+Within the launch description, there is a system of three nodes, all from the ``turtlesim`` package.
 The goal of the system is to launch two turtlesim windows, and have one turtle mimic the movements of the other.
 
 The first two actions in the launch description launch two turtlesim windows:
 
-.. code-block:: python
+.. tabs::
 
-       Node(
-           package='turtlesim',
-           namespace='turtlesim1',
-           executable='turtlesim_node',
-           name='sim'
-       ),
-       Node(
-           package='turtlesim',
-           namespace='turtlesim2',
-           executable='turtlesim_node',
-           name='sim'
-       ),
+  .. group-tab:: XML launch file
+
+    .. code-block:: xml
+
+          <node pkg="turtlesim" exec="turtlesim_node" name="sim" namespace="turtlesim1"/>
+          <node pkg="turtlesim" exec="turtlesim_node" name="sim" namespace="turtlesim2"/>
+
+  .. group-tab:: Python, Foxy and newer
+
+    .. code-block:: python
+
+           Node(
+               package='turtlesim',
+               namespace='turtlesim1',
+               executable='turtlesim_node',
+               name='sim'
+           ),
+           Node(
+               package='turtlesim',
+               namespace='turtlesim2',
+               executable='turtlesim_node',
+               name='sim'
+           ),
+
+  .. group-tab:: Python, Eloquent and older
+
+    .. code-block:: python
+
+            Node(
+                package='turtlesim',
+                node_namespace='turtlesim1',
+                node_executable='turtlesim_node',
+                node_name='sim'
+            ),
+            Node(
+                package='turtlesim',
+                node_namespace='turtlesim2',
+                node_executable='turtlesim_node',
+                node_name='sim'
+            ),
 
 Note the only difference between the two nodes is their namespace values.
 Unique namespaces allow the system to start two simulators without node name nor topic name conflicts.
@@ -159,18 +218,45 @@ Without unique namespaces, there would be no way to distinguish between messages
 
 The final node is also from the ``turtlesim`` package, but a different executable: ``mimic``.
 
+.. tabs::
 
-.. code-block:: python
 
-      Node(
-          package='turtlesim',
-          executable='mimic',
-          name='mimic',
-          remappings=[
-            ('/input/pose', '/turtlesim1/turtle1/pose'),
-            ('/output/cmd_vel', '/turtlesim2/turtle1/cmd_vel'),
-          ]
-      )
+  .. group-tab:: XML launch file
+
+    .. code-block:: xml
+
+          <node pkg="turtlesim" exec="mimic" name="mimic">
+            <remap from="/input/pose" to="/turtlesim1/turtle1/pose"/>
+            <remap from="/output/cmd_vel" to="/turtlesim2/turtle1/cmd_vel"/>
+          </node>
+
+  .. group-tab:: Python, Foxy and newer
+
+    .. code-block:: python
+
+          Node(
+              package='turtlesim',
+              executable='mimic',
+              name='mimic',
+              remappings=[
+                ('/input/pose', '/turtlesim1/turtle1/pose'),
+                ('/output/cmd_vel', '/turtlesim2/turtle1/cmd_vel'),
+              ]
+          )
+
+  .. group-tab:: Python, Eloquent and older
+
+    .. code-block:: python
+
+            Node(
+                package='turtlesim',
+                node_executable='mimic',
+                node_name='mimic',
+                remappings=[
+                  ('/input/pose', '/turtlesim1/turtle1/pose'),
+                  ('/output/cmd_vel', '/turtlesim2/turtle1/cmd_vel'),
+                ]
+            )
 
 
 This node has added configuration details in the form of remappings.
@@ -183,11 +269,10 @@ In other words, ``turtlesim2`` will mimic ``turtlesim1``'s movements.
 3 ros2 launch
 ^^^^^^^^^^^^^
 
-To launch ``turtlesim_mimic_launch.py``, enter into the directory you created earlier and run the following command:
+Open in a terminal the directory where you created the launch file, then you can run the following command:
 
 .. code-block:: console
 
-  cd launch
   ros2 launch turtlesim_mimic_launch.py
 
 .. note::
